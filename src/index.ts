@@ -1,6 +1,8 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+console.log("verify token: ", process.env.VERIFY_TOKEN)
+
 import express, { type Request, type Response, type NextFunction } from "express";
 import webhookroute from "./routes/routes.js";
 
