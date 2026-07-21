@@ -15,6 +15,8 @@ import webhookroute from "./routes/webhook.routes.js";
 import messageRoutes from "./routes/message.routes.js";
 import dbconnection from './db/connection.db.js';
 
+import cors from 'cors';
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,6 +24,13 @@ const PORT = process.env.PORT || 3000;
 const httpServer = createServer(app);
 initSocket(httpServer);
 app.use(express.json());
+
+app.use(cors({
+    origin: [
+        'http://localhost:5173',
+        'http://localhost:5174'],
+    credentials: true
+}));
 
 app.use(
     (req: Request, res: Response, next: NextFunction) => {
@@ -37,7 +46,7 @@ app.use(
 
 
 app.use("/webhook", webhookroute);
-app.use("/api/messages",messageRoutes);
+app.use("/api/messages", messageRoutes);
 
 app.get("/", (req: Request, res: Response) => {
 
