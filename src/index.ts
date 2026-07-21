@@ -1,50 +1,86 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-console.log("verify token: ", process.env.VERIFY_TOKEN)
+// console.log("verify token:", process.env.VERIFY_TOKEN);
 
-import express, { type Request, type Response, type NextFunction } from "express";
+import express, {
+    type Request,
+    type Response,
+    type NextFunction
+} from "express";
+
+import { createServer } from "http";
+import { initSocket } from "./socket.js";
 import webhookroute from "./routes/routes.js";
+import dbconnection from './db/connection.db.js';
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Parse JSON body
+const httpServer = createServer(app);
+initSocket(httpServer);
 app.use(express.json());
 
-// Log every incoming request
-app.use((req: Request, res: Response, next: NextFunction) => {
-    console.log("====================================");
-    console.log(`📩 ${req.method} ${req.originalUrl}`);
-    console.log("Time:", new Date().toISOString());
-    console.log("====================================");
-    next();
-});
+app.use(
+    (req: Request, res: Response, next: NextFunction) => {
 
-// Webhook Routes
+        console.log("====================================");
+        console.log(`📩 ${req.method} ${req.originalUrl}`);
+        console.log("Time:", new Date().toISOString());
+        console.log("====================================");
+
+        next();
+    }
+);
+
+
 app.use("/webhook", webhookroute);
-
-// Test Route
 app.get("/", (req: Request, res: Response) => {
+
     res.status(200).json({
         success: true,
         message: "TypeScript Node.js Server is running smoothly!"
     });
+
 });
 
-// 404 Handler
-app.use((req: Request, res: Response) => {
-    res.status(404).json({
-        success: false,
-        message: "Route Not Found"
-    });
-});
+app.use(
+    (req: Request, res: Response) => {
 
-// Start Server
-app.listen(PORT, () => {
-    console.log("====================================");
-    console.log(`🚀 Server Running`);
-    console.log(`Port : ${PORT}`);
-    console.log(`Webhook : /webhook`);
-    console.log("====================================");
-});
+        res.status(404).json({
+            success: false,
+            message: "Route Not Found"
+        });
+
+    }
+);
+
+const startServer = async () => {
+    try {
+        console.log("Connecting to DB...");
+        await dbconnection();
+
+        console.log("DB connected");
+
+        // Start server
+        httpServer.listen(PORT, () => {
+
+            console.log("====================================");
+            console.log(`🚀 Server Running`);
+            console.log(`Port : ${PORT}`);
+            console.log(`Webhook : /webhook`);
+            console.log(`Socket.io : Enabled`);
+            console.log("====================================");
+
+        });
+
+    } catch (error) {
+        console.error("DB connection failed:", error);
+        process.exit(1);
+    }
+};
+
+startServer();
+
+
