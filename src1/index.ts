@@ -11,8 +11,8 @@ import express, {
 
 import { createServer } from "http";
 import { initSocket } from "./socket.js";
-import webhookroute from "./routes/webhook.routes.js";
-import messageRoutes from "./routes/message.routes.js";
+import webhookroute from "./routes/routes.js";
+import messageRoutes from "./routes/routes.js";
 import dbconnection from './db/connection.db.js';
 
 
